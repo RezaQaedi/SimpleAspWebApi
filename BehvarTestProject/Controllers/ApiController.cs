@@ -123,7 +123,7 @@ namespace BehvarTestProject.Controllers
                             data.Add(cName, value);
 
                         }
-                        // Make an Anonymous type for each row 
+                        // Add keyValues to expando obj
                         foreach (var keyValue in data)
                         {
                             Helpers.AddProperty(expando, keyValue.Key, keyValue.Value);
