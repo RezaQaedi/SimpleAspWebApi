@@ -20,85 +20,52 @@ namespace BehvarTestProject.Controllers
 
         // POST: api/Reports
         [HttpPost]
-        public async Task<ApiResponse> PostReport([Bind("Title,Query")] ReportApiModel reportDataModel)
+        public async Task<IActionResult> PostReport([Bind("Title,Query")] ReportApiModel reportApiModel)
         {
-            var report = new ReportDataModel(reportDataModel.Title, reportDataModel.Query)
+            var report = new ReportDataModel(reportApiModel.Title, reportApiModel.Query)
             {
                 CreatedAt = DateTime.Now
             };
 
-            if (ModelState.IsValid)
-            {
-                _context.Add(report);
-                await _context.SaveChangesAsync();
-                return new ApiResponse()
-                {
-                    Data = report,
-                };
-            }
-            return new ApiResponse()
-            {
-                ErrorMessage = "Couldn't add new item!"
-            };
+            _context.Add(report);
+            await _context.SaveChangesAsync();
+            var baseUri = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}";
+            var locationUri = baseUri + $"/api/Reports/{report.Id}";
+            return Created(locationUri, report);
         }
 
         // GET : api/Reports/1
         [HttpGet("{id}")]
-        public async Task<ApiResponse> GetReports(int id)
+        public async Task<IActionResult> GetReports(int id)
         {
-            var errorResponse = new ApiResponse()
-            {
-                ErrorMessage = "Not found!",
-            };
-
-            if (_context.Reports == null)
-            {
-                return errorResponse;
-            }
-
             var reportDataModel = await _context.Reports
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (reportDataModel == null)
-            {
-                return errorResponse;
-            }
 
-            return new ApiResponse()
-            {
-                Data = reportDataModel,
-            };
+            if (reportDataModel == null)
+                return NotFound();
+
+            return Ok(reportDataModel);
         }
 
         // GET : api/Reports
         [HttpGet]
-        public async Task<ApiResponse> GetReports()
+        public async Task<IActionResult> GetReports()
         {
-            if (_context.Reports == null)
-            {
-                return new ApiResponse()
-                {
-                    ErrorMessage = "Not found!",
-                };
-            }
             var dataList = await _context.Reports.ToListAsync();
 
-
-            return new ApiResponse()
-            {
-                Data = dataList,
-            };
+            return Ok(dataList);
         }
 
         // PUT : api/Reports/2
         [HttpPut("{id}")]
-        public async Task<ApiResponse> ExecuteReport(int id)
+        public async Task<IActionResult> ExecuteReport(int id)
         {
             var report = await _context.Reports.FirstOrDefaultAsync(m => m.Id == id);
 
             if (report == null || report.Query == null)
-                return new ApiResponse { ErrorMessage = "Not Found" };
+                return BadRequest();
 
-            if (report.Query.Substring(0, 6).ToUpper() == "SELECT")
+            if (report.Query[..6].ToUpper() == "SELECT")
             {
                 var results = new List<object>();
                 try
@@ -137,14 +104,14 @@ namespace BehvarTestProject.Controllers
                 }
                 catch (Exception)
                 {
-                    return new ApiResponse { ErrorMessage = "Query not valid!" };
+                    return BadRequest();
                 }
                 finally
                 {
                     _context.Database.CloseConnection();
                 }
 
-                return new ApiResponse() { Data = results };
+                return Ok(results);
             }
             else
             {
@@ -155,10 +122,10 @@ namespace BehvarTestProject.Controllers
                 }
                 catch (Exception)
                 {
-                    return new ApiResponse { ErrorMessage = "Query not valid!" };
+                    return BadRequest();
                 }
 
-                return new ApiResponse() { Data = "Done!" };
+                return Ok();
             }
         }
     }

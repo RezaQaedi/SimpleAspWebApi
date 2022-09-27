@@ -9,11 +9,5 @@ namespace BehvarTestProject.DataModels
         public ApplicationDpContext(DbContextOptions<ApplicationDpContext> contextOptions) : base(contextOptions)
         {
         }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-
-            base.OnModelCreating(modelBuilder);
-        }
     }
 }
