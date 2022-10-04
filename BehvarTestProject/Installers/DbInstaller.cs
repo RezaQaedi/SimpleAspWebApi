@@ -1,7 +1,4 @@
-﻿using BehvarTestProject.DataModels;
-using Microsoft.EntityFrameworkCore;
-
-namespace BehvarTestProject.Installers
+﻿namespace BehvarTestProject.Installers
 {
     public class DbInstaller : IInstaller
     {

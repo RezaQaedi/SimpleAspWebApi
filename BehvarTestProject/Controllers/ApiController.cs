@@ -1,9 +1,5 @@
 ﻿using BehvarTestProject.ApiModels;
-using BehvarTestProject.DataModels;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Data;
-using System.Dynamic;
 
 namespace BehvarTestProject.Controllers
 {

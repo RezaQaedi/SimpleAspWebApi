@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-
-namespace BehvarTestProject.DataModels
+﻿namespace BehvarTestProject.DataModels
 {
     public class ApplicationDpContext : DbContext
     {
