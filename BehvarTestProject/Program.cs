@@ -1,20 +1,9 @@
-using BehvarTestProject.DataModels;
-using Microsoft.EntityFrameworkCore;
+using BehvarTestProject.Installers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-// Add ApplicationDbContext to DI
-builder.Services.AddDbContext<ApplicationDpContext>(o => 
-{
-    o.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.InstallServicesInAssembly(builder.Configuration);
 
 var app = builder.Build();
 
