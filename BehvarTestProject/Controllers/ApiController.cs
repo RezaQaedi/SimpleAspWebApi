@@ -3,7 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BehvarTestProject.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
+    [Produces("application/json")]
     [ApiController]
     public class ReportsController : Controller
     {
@@ -14,7 +15,21 @@ namespace BehvarTestProject.Controllers
             _context = context;
         }
 
-        // POST: api/Reports
+        /// <summary>
+        /// Adds new reports 
+        /// </summary>
+        /// <param name="reportApiModel">Should be defined as a model </param>
+        /// <response code ="201">Indicats new reports has been addded</response>
+        /// <remarks>
+        /// **Sample request:**
+        ///
+        ///     POST /Report
+        ///     {
+        ///        "Title": "This is title",
+        ///        "Query": "Select * from Reports",
+        ///     }
+        ///
+        /// </remarks>
         [HttpPost]
         public async Task<IActionResult> PostReport([Bind("Title,Query")] ReportApiModel reportApiModel)
         {
@@ -30,8 +45,15 @@ namespace BehvarTestProject.Controllers
             return Created(locationUri, report);
         }
 
-        // GET : api/Reports/1
+        /// <summary>
+        /// Gets item by it id 
+        /// </summary>
+        /// <param name="id" example="123">Report id</param>
+        /// <response code="404">No item found</response>
+        /// <response code="200">If item exist</response>
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetReports(int id)
         {
             var reportDataModel = await _context.Reports
