@@ -29,14 +29,11 @@ namespace BehvarTestProject
 
                 // Add user id so the UsaerManger.GetUserAsync can get find the user based on id 
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-
-                // Add user email for SignalR chatHub identifier 
-                new Claim(ClaimTypes.Email, user.Email)
             };
 
             // Create the credentials used to generate token
             var credential = new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes("key")),
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes("MySuperSecretKey")),
                 SecurityAlgorithms.HmacSha256);
 
             // Generate JWT Token 

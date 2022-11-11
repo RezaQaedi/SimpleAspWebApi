@@ -6,15 +6,26 @@ using Swashbuckle.AspNetCore.Filters;
 using System.Reflection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using BehvarTestProject.Providers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+builder.Services.AddIdentityCore<IdentityUser>(o =>
+{
+    o.Tokens.PasswordResetTokenProvider = FourDigitTokenProvider.ProviderKey;
+})
                 .AddEntityFrameworkStores<ApplicationDpContext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders()
+                .AddTokenProvider<ResetPasswordTokenProvider>(ResetPasswordTokenProvider.ProviderKey)
+                .AddTokenProvider<FourDigitTokenProvider>(FourDigitTokenProvider.ProviderKey);
 
-builder.Services.AddAuthentication()
+// Totp based tokens use diffrent provider 
+builder.Services.Configure<DataProtectionTokenProviderOptions>(
+            x => x.TokenLifespan = TimeSpan.FromDays(1));
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters()
@@ -25,7 +36,7 @@ builder.Services.AddAuthentication()
             ValidateIssuerSigningKey = true,
             ValidIssuer = "Me",
             ValidAudience = "You",
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("key"))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("MySuperSecretKey"))
         };
     });
 
@@ -53,6 +64,30 @@ builder.Services.AddSwaggerGen(c =>
     c.IncludeXmlComments(xmlPath);
     c.ExampleFilters();
     c.OperationFilter<AddResponseHeadersFilter>();
+    c.AddSecurityDefinition(name: "Bearer", securityScheme: new OpenApiSecurityScheme()
+    {
+        Name = "Authorization",
+        Description = "Enter the Bearer Authorization string as following: `Bearer Generated-JWT-Token`",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Name = "Bearer",
+                In = ParameterLocation.Header,
+                Reference = new OpenApiReference
+                {
+                    Id = "Bearer",
+                    Type = ReferenceType.SecurityScheme
+                }
+            },
+            new List<string>()
+        }
+    });
 });
 
 

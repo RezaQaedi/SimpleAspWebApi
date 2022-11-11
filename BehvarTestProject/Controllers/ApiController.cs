@@ -1,4 +1,7 @@
 ﻿using BehvarTestProject.ApiModels;
+using BehvarTestProject.Providers;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BehvarTestProject.Controllers
@@ -9,10 +12,12 @@ namespace BehvarTestProject.Controllers
     public class ReportsController : Controller
     {
         readonly ApplicationDpContext _context;
+        readonly UserManager<IdentityUser> _userManager;
 
-        public ReportsController(ApplicationDpContext context)
+        public ReportsController(ApplicationDpContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         /// <summary>
@@ -73,6 +78,33 @@ namespace BehvarTestProject.Controllers
 
             return Ok(dataList);
         }
+
+
+        [HttpPost("GetUsers")]
+        public async Task<IActionResult> GetUsers()
+        {
+            return Ok(await _userManager.Users.ToListAsync());
+        }
+
+        [HttpPost("rest")]
+        public async Task<IActionResult> GetToken()
+        {
+            var user = await _userManager.Users.FirstAsync();
+            //var token = user.GenerateJwtToken();
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            return Ok(token);
+        }
+
+        [HttpPost("token/{token}")]
+        public async Task<IActionResult> UseToken(string token)
+        {
+            var user = await _userManager.Users.FirstAsync();
+            var r = await _userManager.ResetPasswordAsync(user, token, "123");
+
+            return Ok(token);
+        }
+
 
         // PUT : api/Reports/2
         [HttpPut("{id}")]
