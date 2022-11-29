@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using BehvarTestProject.Providers;
+using BehvarTestProject.Filters;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,43 +55,16 @@ builder.Services.Configure<IdentityOptions>(options =>
 
 // Add services to the container.
 builder.Services.InstallServicesInAssembly(builder.Configuration);
+builder.Services.AddHttpContextAccessor();
 
-var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 builder.Services.AddSwaggerExamplesFromAssemblyOf<ReportApiModel>();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo() { Title = "Test API", Version = "v1" });
-    c.IncludeXmlComments(xmlPath);
-    c.ExampleFilters();
-    c.OperationFilter<AddResponseHeadersFilter>();
-    c.AddSecurityDefinition(name: "Bearer", securityScheme: new OpenApiSecurityScheme()
-    {
-        Name = "Authorization",
-        Description = "Enter the Bearer Authorization string as following: `Bearer Generated-JWT-Token`",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Name = "Bearer",
-                In = ParameterLocation.Header,
-                Reference = new OpenApiReference
-                {
-                    Id = "Bearer",
-                    Type = ReferenceType.SecurityScheme
-                }
-            },
-            new List<string>()
-        }
-    });
+
 });
 
+builder.Services.ConfigureOptions<SwaggerGenOption>();
 
 var app = builder.Build();
 
@@ -98,13 +73,17 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(o =>
+    {
+        o.InjectStylesheet("/swagger/custom.css");
+    });
 }
 
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStaticFiles();
 
 app.MapControllers();
 

@@ -10,6 +10,14 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="appsettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="custom.css" />
+  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.8" />
@@ -29,6 +37,12 @@
   <ItemGroup>
     <Folder Include="Migrations\" />
     <Folder Include="SwaggerExample\Response\" />
+    <Folder Include="wwwroot\swagger\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Resource Include="appsettings.json" />
+    <Resource Include="custom.css" />
   </ItemGroup>
 
 </Project>
